@@ -530,5 +530,17 @@ print("정확도 (R-squared):", r_squared_upper)
 ![image](https://github.com/corin2junseo/AiProject/assets/96821559/59c2e0c9-9a3d-4f21-9a1f-f1f9ad40bc89)
 
 
+# 결론
+해당 분석 결과로 범죄율과 생활 수준 간의 상관 관계를 살펴보았습니다. 
+주요 직업군에서의 범죄 발생과 생활 수준 사이에 일부 연관성이 보였습니다.
+예를 들어, 공무원과 경비원에서 범죄 발생이 상대적으로 높았으며
+이런 업군에서의 범죄 발생이 생활 수준과 부정적인 연관성을 보일 수 있습니다.
+
+그리고 생활정도와 범죄 간의 관계를 탐색하기 위해 선형 회귀 모델을
+사용했습니다. 확실히 생활정도가 낮을 수록 범죄 량이 늘어난 것을
+확인할 수 있었습니다.
+
+
+
 # 개발언어
 [![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=corin2junseo&layout=compact)](https://github.com/corin2junseo/github-readme-stats)
