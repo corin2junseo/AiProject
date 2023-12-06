@@ -284,14 +284,251 @@ plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 plt.show()
 
 ```
+
 ![image](https://github.com/corin2junseo/AiProject/assets/96821559/0fcccce0-0274-4051-87c9-434ad68aee12)
 
+# 회귀 분석을 위한 데이터 셋 생성
+### df의 성폭력 범죄를 직업에 맞게 가져오
+```
+crime_categories = ['강간', '유사강간', '강제추행', '성풍속범죄']
+columns_of_interest = [
+    '자영업(농.임.수산업)', '자영업(제조업)', '자영업(건설업)', '자영업(도.소매업)', '자영업(무역업)', '자영업(요식업)', '자영업(숙박업)',
+    '자영업(유흥업)', '자영업(금융업)', '자영업(부동산업)', '자영업(의료보건업)', '자영업(차량정비업)', '자영업(노점)', '자영업(행상)', '자영업(기타사업)',
+    '피고용자(교원(사립))', '피고용자(사무원)', '피고용자(기술자)', '피고용자(점원)', '피고용자(공원)', '피고용자(운전사)', '피고용자(경비원)', '피고용자(외판원)',
+    '피고용자(국공영기업체직원)', '피고용자(일반회사원)', '피고용자(금융기관직원)', '피고용자(유흥업종사자)', '피고용자(요식업종사자)', '피고용자(일용노동자)',
+    '피고용자(기타피고용자)', '전문직(의사)', '전문직(변호사)', '전문직(교수)', '전문직(종교가)', '전문직(언론인)', '전문직(예술인)', '전문직(기타전문직)',
+    '공무원', '기타(학생)', '기타(주부)', '기타(전경.의경)', '기타(공익요원)', '무직자', '미상'
+]
+
+# crime_categories에 해당하는 범죄 카테고리의 값만을 더합니다.
+sum_of_crimes = df.loc[crime_categories, columns_of_interest].sum()
+
+
+print(sum_of_crimes)
+자영업(농.임.수산업)       351
+자영업(제조업)            79
+자영업(건설업)           290
+자영업(도.소매업)          29
+자영업(무역업)            15
+자영업(요식업)           187
+자영업(숙박업)            51
+자영업(유흥업)            81
+자영업(금융업)            19
+자영업(부동산업)          104
+자영업(의료보건업)           8
+자영업(차량정비업)          24
+자영업(노점)             15
+자영업(행상)              0
+자영업(기타사업)         2803
+피고용자(교원(사립))        35
+피고용자(사무원)           52
+피고용자(기술자)          236
+피고용자(점원)            50
+피고용자(공원)            86
+피고용자(운전사)          661
+피고용자(경비원)          119
+피고용자(외판원)          120
+피고용자(국공영기업체직원)      12
+피고용자(일반회사원)       5793
+피고용자(금융기관직원)        38
+피고용자(유흥업종사자)        59
+피고용자(요식업종사자)       257
+피고용자(일용노동자)        740
+피고용자(기타피고용자)      1880
+전문직(의사)            157
+전문직(변호사)            13
+전문직(교수)             18
+전문직(종교가)           121
+전문직(언론인)            21
+전문직(예술인)            82
+전문직(기타전문직)         781
+공무원                430
+기타(학생)            5022
+기타(주부)              47
+기타(전경.의경)           16
+기타(공익요원)            51
+무직자               7728
+미상                3686
+dtype: int64
+```
+
+
+### df3에 해당 데이터셋과 일치하지 않는 직업 삭제
+```
+diff = set(df3['직업별']).symmetric_difference(set(columns_of_interest))
+print(diff)
+{'군인'}
+```
+
+
+### 군인 행 삭제
+```
+df3 = df3[~df3['직업별'].str.contains('군인')]
+```
+
+
+### df3의 인덱스를 'crime_categories'로 설정하여 일치시킴
+```
+df3 = df3.set_index(sum_of_crimes.index)
+
+if df3.index.equals(sum_of_crimes.index):
+    df3['죄종별_직업별_범죄합'] = sum_of_crimes
+    print(df3['죄종별_직업별_범죄합'])
+else:
+    print("데이터프레임의 인덱스와 sum_of_crimes가 일치하지 않습니다.")
+
+
+# 필요한 컬럼만 남기기
+df3 = df3[['직업별', '생활정도_하류', '생활정도_중류', '생활정도_상류','죄종별_직업별_범죄합']]
+df3.head()
+	직업별	생활정도_하류	생활정도_중류	생활정도_상류	죄종별_직업별_범죄합
+자영업(농.임.수산업)	자영업(농.임.수산업)	177	143	5	351
+자영업(제조업)	자영업(제조업)	47	41	10	79
+자영업(건설업)	자영업(건설업)	112	124	11	290
+자영업(도.소매업)	자영업(도.소매업)	22	28	3	29
+자영업(무역업)	자영업(무역업)	8	16	1	15
+```
+
+# 선형회귀
+```
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+import matplotlib.pyplot as plt
+
+# NaN 값이 있는 행 제거
+df3.dropna(subset=['죄종별_직업별_범죄합', '생활정도_하류', '생활정도_중류', '생활정도_상류'], inplace=True)
+
+# 데이터 준비
+X = df3[['죄종별_직업별_범죄합']]
+
+# 하류 데이터 준비
+y_lower = df3[['생활정도_하류']]
+X_train_lower, X_test_lower, y_train_lower, y_test_lower = train_test_split(X, y_lower, test_size=0.3, random_state=42)
+
+# 중류 데이터 준비
+y_middle = df3[['생활정도_중류']]
+X_train_middle, X_test_middle, y_train_middle, y_test_middle = train_test_split(X, y_middle, test_size=0.3, random_state=42)
+
+# 상류 데이터 준비
+y_upper = df3[['생활정도_상류']]
+X_train_upper, X_test_upper, y_train_upper, y_test_upper = train_test_split(X, y_upper, test_size=0.3, random_state=42)
+
+# 각각의 회귀 모델 초기화
+model_lower = LinearRegression()
+model_middle = LinearRegression()
+model_upper = LinearRegression()
+
+# 하류 회귀 모델 훈련
+model_lower.fit(X_train_lower, y_train_lower)
+
+# 중류 회귀 모델 훈련
+model_middle.fit(X_train_middle, y_train_middle)
+
+# 상류 회귀 모델 훈련
+model_upper.fit(X_train_upper, y_train_upper)
+
+# 각 모델의 성능 측정
+r_squared_lower = model_lower.score(X_test_lower, y_test_lower)
+r_squared_middle = model_middle.score(X_test_middle, y_test_middle)
+r_squared_upper = model_upper.score(X_test_upper, y_test_upper)
+
+# 결과 출력
+print("하류의 정확도 (R-squared):", r_squared_lower)
+print("중류의 정확도 (R-squared):", r_squared_middle)
+print("상류의 정확도 (R-squared):", r_squared_upper)
+
+하류의 정확도 (R-squared): 0.9710158070094292
+중류의 정확도 (R-squared): 0.8428757765100872
+상류의 정확도 (R-squared): 0.905096566720173
+```
+
+### 하류의 그래프
+```
+plt.figure(figsize=(10, 6))
+
+# 실제 데이터
+plt.scatter(X_test_all, y_test_all['생활정도_하류'], color='blue')
+
+# 회귀 예측 결과
+plt.plot(X_test_all, predictions_all[:, 0], color='red', linewidth=2)
+
+plt.title('Linear Regression - Lower Class')
+plt.xlabel('죄종별_직업별_범죄합')
+plt.ylabel('생활정도_하류')
+plt.legend(['Regression line', 'Test data'])
+plt.show()
+
+print("기울기 (Coefficient):", model_lower.coef_)
+print("절편 (Intercept):", model_lower.intercept_)
+print("정확도 (R-squared):", r_squared_lower)
+
+기울기 (Coefficient): [[0.40121807]]
+절편 (Intercept): [14.18627527]
+정확도 (R-squared): 0.9710158070094292
+```
+![image](https://github.com/corin2junseo/AiProject/assets/96821559/7e354be2-8863-4b09-a4d9-7932b961aec7)
+
+### 중류의 그래프
+```
+# 중류 예측 수행
+predictions_middle = model_middle.predict(X_test_middle)
+
+plt.figure(figsize=(10, 6))
+
+# 실제 데이터
+plt.scatter(X_test_middle, y_test_middle, color='blue')
+
+# 회귀 예측 결과
+plt.plot(X_test_middle, predictions_middle, color='red', linewidth=2)
+
+plt.title('Linear Regression - Middle Class')
+plt.xlabel('죄종별_직업별_범죄합')
+plt.ylabel('생활정도_중류')
+plt.legend(['Regression line', 'Test data'])
+plt.show()
+
+print("기울기 (Coefficient):", model_middle.coef_)
+print("절편 (Intercept):", model_middle.intercept_)
+print("정확도 (R-squared):", r_squared_middle)
+
+기울기 (Coefficient): [[0.32042959]]
+절편 (Intercept): [33.41282841]
+정확도 (R-squared): 0.8428757765100872
+```
+
+![image](https://github.com/corin2junseo/AiProject/assets/96821559/5b9d91c8-f90e-48a2-ad5b-05173d4bb26d)
 
 
 
+### 상류의 그래프
+```
+# 상류 예측 수행
+predictions_upper = model_upper.predict(X_test_upper)
+
+plt.figure(figsize=(10, 6))
+
+# 실제 데이터
+plt.scatter(X_test_upper, y_test_upper, color='blue')
+
+# 회귀 예측 결과
+plt.plot(X_test_upper, predictions_upper, color='red', linewidth=2)
+
+plt.title('Linear Regression - Upper Class')
+plt.xlabel('죄종별_직업별_범죄합')
+plt.ylabel('생활정도_상류')
+plt.legend(['Regression line', 'Test data'])
+plt.show()
+
+print("기울기 (Coefficient):", model_upper.coef_)
+print("절편 (Intercept):", model_upper.intercept_)
+print("정확도 (R-squared):", r_squared_upper)
+
+기울기 (Coefficient): [[0.00971902]]
+절편 (Intercept): [4.83130377]
+정확도 (R-squared): 0.905096566720173
+```
+![image](https://github.com/corin2junseo/AiProject/assets/96821559/59c2e0c9-9a3d-4f21-9a1f-f1f9ad40bc89)
 
 
-
-
-
+# 개발언어
 [![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=corin2junseo&layout=compact)](https://github.com/corin2junseo/github-readme-stats)
