@@ -131,6 +131,115 @@ plt.show()
 ![image](https://github.com/corin2junseo/AiProject/assets/96821559/dbbb8b92-0e20-44e6-9078-9ef9a8ef8486)
 
 
+# 직업별 범죄 분석 
+* 자영업자의 범죄 분석
+```
+# '자영업'에 해당하는 칼럼들만 선택하여 각 칼럼의 합 계산
+self_employment_columns = ['자영업(소계)', '자영업(농.임.수산업)', '자영업(광업)', '자영업(제조업)', '자영업(건설업)',
+                           '자영업(도.소매업)', '자영업(무역업)', '자영업(요식업)', '자영업(숙박업)', '자영업(유흥업)']
+
+# '자영업'에 해당하는 칼럼들 중 상위 5개 직업 열 선택
+top_5_self_employment = df[self_employment_columns].sum().nlargest(6).index[1:].tolist()
+
+# 상위 5개 직업 열을 이용하여 그래프 그리기
+df.loc['강간':'기타 강간 강제추행등', top_5_self_employment].plot(kind='bar', stacked=True, figsize=(12, 8))
+
+plt.title('범죄자 직업별 범죄 중분류에 따른 분포')
+plt.xlabel('범죄 중분류')
+plt.ylabel('범죄자 직업 합계')
+
+plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+
+plt.show()
+```
+![image](https://github.com/corin2junseo/AiProject/assets/96821559/cb70026a-1bf9-435b-bca9-6bc1b4643393)
+
+* 피고용자의 범죄 분석
+```
+# '피고용자'에 해당하는 칼럼들만 선택하여 각 칼럼의 합 계산
+employee_columns = ['피고용자(교원(사립))', '피고용자(사무원)', '피고용자(기술자)', '피고용자(점원)',
+                    '피고용자(공원)', '피고용자(운전사)', '피고용자(경비원)', '피고용자(외판원)', '피고용자(국공영기업체직원)',
+                    '피고용자(일반회사원)', '피고용자(금융기관직원)', '피고용자(유흥업종사자)', '피고용자(요식업종사자)', '피고용자(일용노동자)']
+
+# '피고용자'에 해당하는 칼럼들 중 상위 5개 직업 열 선택
+top_5_employee = df[employee_columns].sum().nlargest(5).index.tolist()
+
+# 상위 5개 직업 열을 이용하여 그래프 그리기
+df.loc['강간':'기타 강간 강제추행등', top_5_employee].plot(kind='bar', stacked=True, figsize=(12, 8))
+
+plt.title('범죄자 직업별 범죄 중분류에 따른 분포')
+plt.xlabel('범죄 중분류')
+plt.ylabel('범죄자 직업 합계')
+
+plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+
+plt.show()
+```
+![image](https://github.com/corin2junseo/AiProject/assets/96821559/cf383870-858b-42e3-a42c-44466bf1ec4a)
+
+* 전문직의 범죄 분석
+```
+# '전문직'에 해당하는 칼럼들만 선택하여 각 칼럼의 합 계산
+professional_columns = ['전문직(의사)', '전문직(변호사)', '전문직(교수)', '전문직(종교가)', '전문직(언론인)', '전문직(예술인)']
+
+# '전문직'에 해당하는 칼럼들 중 상위 5개 직업 열 선택
+top_5_professional = df[professional_columns].sum().nlargest(5).index.tolist()
+
+# 상위 5개 직업 열을 이용하여 그래프 그리기
+df.loc['강간':'기타 강간 강제추행등', top_5_professional].plot(kind='bar', stacked=True, figsize=(12, 8))
+
+plt.title('범죄자 직업별 범죄 중분류에 따른 분포')
+plt.xlabel('범죄 중분류')
+plt.ylabel('범죄자 직업 합계')
+
+plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+
+plt.show()
+```
+![image](https://github.com/corin2junseo/AiProject/assets/96821559/17ddf1f2-ea9b-4b98-a75a-cf6bfa412b75)
+
+* 학생의 범죄 분석
+```
+# '기타(학생)' 열의 상위 2위부터 6위까지 데이터 가져오기
+top_2_to_6_students = df['기타(학생)'].nlargest(6).iloc[1:]
+
+# 색상
+colors = ['gold', 'lightcoral', 'lightskyblue', 'lightgreen', 'orange']
+
+# 원형 그래프 그리기
+plt.figure(figsize=(8, 8))
+plt.pie(top_2_to_6_students, labels=top_2_to_6_students.index, colors=colors, autopct='%1.1f%%', startangle=140)
+plt.axis('equal')  # 원을 원형으로 보이기 위해
+plt.title('기타(학생) 상위 2위부터 6위까지의 비율',pad=20)
+plt.show()
+```
+![image](https://github.com/corin2junseo/AiProject/assets/96821559/24fb3a30-d3e9-47b0-832a-931155e6e6d8)
+* 학생의 범죄 동기
+```
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+filename = '/content/경찰청_미성년자 범행 동기 현황_20201231.csv'
+dforiginal2 = pd.read_csv(filename, encoding='cp949')
+df2 = dforiginal2.drop(['기타','총합'], axis=1)
+
+# '연도' 열을 인덱스로 설정하여 플로팅
+df2.set_index('연도', inplace=True)
+
+df2.plot(kind='bar', stacked=True, figsize=(10, 10))
+
+plt.title('미성년자 범행 동기')
+plt.xlabel('연도')
+plt.ylabel('범죄 동기')
+
+plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+
+plt.show()
+```
+
+![image](https://github.com/corin2junseo/AiProject/assets/96821559/9c244d83-a336-40ab-86fe-21dc30eda2a3)
+
 
 
 
