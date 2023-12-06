@@ -237,8 +237,59 @@ plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 
 plt.show()
 ```
-
 ![image](https://github.com/corin2junseo/AiProject/assets/96821559/9c244d83-a336-40ab-86fe-21dc30eda2a3)
+
+# 생활정도와 성범죄 관련성
+### 검찰청 성폭력 범죄자의 생활환경과 직업 데이터셋
+```
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# 데이터 불러오기
+filename = '/content/대검찰청_성폭력범죄자의 생활환경과 직업_20171231.csv'
+df3 = pd.read_csv(filename, encoding='cp949')
+df3.head()
+
+
+직업별	생활정도_하류	생활정도_중류	생활정도_상류	생활정도_미상	유배우자	동거	이혼	사별	혼인관계_미상	실(양)부모	계부모	실부계모	실부무모	실모계부	실모무부	계부무모	계모무부	무부모	미혼자부모관계_미상
+0	자영업(농.임.수산업)	177	143	5	76	194	13	53	11	76	24	0	2	1	1	14	0	0	12	0
+1	자영업(제조업)	47	41	10	17	61	2	6	2	17	23	0	0	0	0	2	0	0	1	1
+2	자영업(건설업)	112	124	11	93	140	6	48	2	95	25	0	0	3	1	12	0	0	8	0
+3	자영업(도.소매업)	22	28	3	17	32	1	3	0	17	12	0	0	0	1	2	0	0	2	0
+4	자영업(무역업)	8	16	1	10	14	0	3	0	10	7	0	0	0	0	1	0	0	0	0
+```
+
+### 직업별 발생 건수 계산 데이터셋
+```
+# 직업별 전체 발생 건수 계산
+job_counts = df3.groupby('직업별').size().sort_values(ascending=False)
+
+# 상위 1위부터 10위까지의 직업 리스트
+top_10_jobs = job_counts.head(10).index.tolist()
+
+# 전체 발생 건수 상위 1위부터 10위까지의 직업만 필터링하여 가져오기
+top_10_jobs_data = df3[df3['직업별'].isin(top_10_jobs)]
+```
+### 해당 데이터셋을 이용해 피벗으로 그래프 생성
+```
+# 필터링한 데이터를 피벗하여 그래프 생성
+pivot_df = top_10_jobs_data.pivot_table(index='직업별', values=['생활정도_하류', '생활정도_중류', '생활정도_상류'])
+
+# 그래프 생성
+pivot_df.plot(kind='bar', stacked=True, figsize=(12, 8))
+plt.title('상위 직업별 생활정도 분포')
+plt.xlabel('직업별')
+plt.ylabel('생활정도')
+plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+plt.show()
+
+```
+![image](https://github.com/corin2junseo/AiProject/assets/96821559/0fcccce0-0274-4051-87c9-434ad68aee12)
+
+
+
+
+
 
 
 
